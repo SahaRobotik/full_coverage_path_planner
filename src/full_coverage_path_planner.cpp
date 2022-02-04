@@ -70,7 +70,6 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
   geometry_msgs::PoseStamped new_goal;
   std::list<Point_t>::const_iterator it, it_next, it_prev;
   int dx_now, dy_now, dx_next, dy_next, move_dir_now = 0, move_dir_prev = 0, move_dir_next = 0;
-  bool do_publish = false;
   float orientation = eDirNone;
   ROS_INFO("Received goalpoints with length: %lu", goalpoints.size());
   if (goalpoints.size() > 1)
@@ -104,21 +103,16 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
       //  0 + -1*2 = -2
       move_dir_now = dx_now + dy_now * 2;
       move_dir_next = dx_next + dy_next * 2;
-
-      // Check if this points needs to be published (i.e. a change of direction or first or last point in list)
-      do_publish = move_dir_next != move_dir_now || it == goalpoints.begin() ||
-                   (it != goalpoints.end() && it == --goalpoints.end());
       move_dir_prev = move_dir_now;
 
-      // Add to vector if required
-      if (do_publish)
+      // Add to vector
+      new_goal.header.frame_id = "map";
+      new_goal.pose.position.x = (it->x) * tile_size_ + grid_origin_.x + tile_size_ * 0.5;
+      new_goal.pose.position.y = (it->y) * tile_size_ + grid_origin_.y + tile_size_ * 0.5;
+
+      // Calculate desired orientation to be in line with movement direction
+      switch (move_dir_now)
       {
-        new_goal.header.frame_id = "map";
-        new_goal.pose.position.x = (it->x) * tile_size_ + grid_origin_.x + tile_size_ * 0.5;
-        new_goal.pose.position.y = (it->y) * tile_size_ + grid_origin_.y + tile_size_ * 0.5;
-        // Calculate desired orientation to be in line with movement direction
-        switch (move_dir_now)
-        {
         case eDirNone:
           // Keep orientation
           break;
@@ -134,21 +128,20 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
         case eDirDown:
           orientation = M_PI * 1.5;
           break;
-        }
-        new_goal.pose.orientation = tf::createQuaternionMsgFromYaw(orientation);
-        if (it != goalpoints.begin())
-        {
-          previous_goal_.pose.orientation = new_goal.pose.orientation;
-          // republish previous goal but with new orientation to indicate change of direction
-          // useful when the plan is strictly followed with base_link
-          plan.push_back(previous_goal_);
-        }
-        ROS_DEBUG("Voila new point: x=%f, y=%f, o=%f,%f,%f,%f", new_goal.pose.position.x, new_goal.pose.position.y,
-                  new_goal.pose.orientation.x, new_goal.pose.orientation.y, new_goal.pose.orientation.z,
-                  new_goal.pose.orientation.w);
-        plan.push_back(new_goal);
-        previous_goal_ = new_goal;
       }
+      new_goal.pose.orientation = tf::createQuaternionMsgFromYaw(orientation);
+      if (it != goalpoints.begin())
+      {
+        previous_goal_.pose.orientation = new_goal.pose.orientation;
+        // republish previous goal but with new orientation to indicate change of direction
+        // useful when the plan is strictly followed with base_link
+        plan.push_back(previous_goal_);
+      }
+      ROS_DEBUG("Voila new point: x=%f, y=%f, o=%f,%f,%f,%f", new_goal.pose.position.x, new_goal.pose.position.y,
+                new_goal.pose.orientation.x, new_goal.pose.orientation.y, new_goal.pose.orientation.z,
+                new_goal.pose.orientation.w);
+      plan.push_back(new_goal);
+      previous_goal_ = new_goal;
     }
   }
   else
