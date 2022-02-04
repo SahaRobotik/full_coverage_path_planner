@@ -236,4 +236,49 @@ bool FullCoveragePathPlanner::parseGrid(nav_msgs::OccupancyGrid const& cpp_grid_
   }
   return true;
 }
+
+void FullCoveragePathPlanner::upsamplePlan(std::vector<geometry_msgs::PoseStamped>& path, double seperation)
+{
+  if(path.size() < 2) return;
+
+  std::vector<geometry_msgs::PoseStamped> path_ = path;
+  path.clear();
+
+  for(int i = 0; i < path_.size()-1; i++)
+  {
+    geometry_msgs::PoseStamped pose1 = path_[i];
+    geometry_msgs::PoseStamped pose2 = path_[i+1];
+
+    // Add pose1 to new path
+    path.push_back(pose1);
+
+    // If poses have same orientation, do not upsample
+    if(tf::getYaw(pose1.pose.orientation) != tf::getYaw(pose2.pose.orientation)) continue;
+
+    // Find eucledian distance
+    double dx, dy, distance;
+    dx = pose1.pose.position.x - pose2.pose.position.x;
+    dy = pose1.pose.position.y - pose2.pose.position.y;
+    distance = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
+
+    // Check if distance is greater than seperation
+    if(distance <= seperation) continue;
+
+    // Find intermediate pose count
+    int pose_count = distance / seperation;
+
+    // Upsample poses
+    for(int j = 1; j <= pose_count; j++)
+    {
+      geometry_msgs::PoseStamped pose = pose1;
+
+      pose.pose.position.x -= (dx / pose_count * j);
+      pose.pose.position.y -= (dy / pose_count * j);
+
+      path.push_back(pose);
+    }
+  }
+
+  path.push_back(path[path.size()-1]);
+}
 }  // namespace full_coverage_path_planner

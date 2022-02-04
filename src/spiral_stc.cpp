@@ -270,6 +270,10 @@ bool SpiralSTC::makePlan(const geometry_msgs::PoseStamped& start, const geometry
   // TODO(CesarLopez): Check if global path should be calculated repetitively or just kept
   // (also controlled by planner_frequency parameter in move_base namespace)
 
+  ROS_INFO("Upsampling plan!");
+  upsamplePlan(plan, 0.05);
+  ROS_INFO("Plan upsampled.");
+
   ROS_INFO("Publishing plan!");
   publishPlan(plan);
   ROS_INFO("Plan published!");

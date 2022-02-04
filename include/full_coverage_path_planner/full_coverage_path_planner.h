@@ -100,6 +100,12 @@ protected:
                  float toolRadius,
                  geometry_msgs::PoseStamped const& realStart,
                  Point_t& scaledStart);
+  /**
+   * @brief Upsample given path for better local navigation
+   * @param path
+   * @param seperation Distance between newly created poses
+   */
+  void upsamplePlan(std::vector<geometry_msgs::PoseStamped>& path, double seperation);
   ros::Publisher plan_pub_;
   ros::ServiceClient cpp_grid_client_;
   nav_msgs::OccupancyGrid cpp_grid_;
