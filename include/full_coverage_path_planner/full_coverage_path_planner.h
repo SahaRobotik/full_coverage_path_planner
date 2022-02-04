@@ -109,6 +109,7 @@ protected:
   float tile_size_;
   fPoint_t grid_origin_;
   bool initialized_;
+  string map_frame_;
   geometry_msgs::PoseStamped previous_goal_;
 
   struct spiral_cpp_metrics_type

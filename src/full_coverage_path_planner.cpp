@@ -106,7 +106,7 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
       move_dir_prev = move_dir_now;
 
       // Add to vector
-      new_goal.header.frame_id = "map";
+      new_goal.header.frame_id = map_frame_;
       new_goal.pose.position.x = (it->x) * tile_size_ + grid_origin_.x + tile_size_ * 0.5;
       new_goal.pose.position.y = (it->y) * tile_size_ + grid_origin_.y + tile_size_ * 0.5;
 
@@ -146,7 +146,7 @@ void FullCoveragePathPlanner::parsePointlist2Plan(const geometry_msgs::PoseStamp
   }
   else
   {
-    new_goal.header.frame_id = "map";
+    new_goal.header.frame_id = map_frame_;
     new_goal.pose.position.x = (goalpoints.begin()->x) * tile_size_ + grid_origin_.x + tile_size_ * 0.5;
     new_goal.pose.position.y = (goalpoints.begin()->y) * tile_size_ + grid_origin_.y + tile_size_ * 0.5;
     new_goal.pose.orientation = tf::createQuaternionMsgFromYaw(0);
@@ -200,6 +200,9 @@ bool FullCoveragePathPlanner::parseGrid(nav_msgs::OccupancyGrid const& cpp_grid_
   tile_size_ = nodeSize * cpp_grid_.info.resolution;  // Size of a tile in meters
   grid_origin_.x = cpp_grid_.info.origin.position.x;  // x-origin in meters
   grid_origin_.y = cpp_grid_.info.origin.position.y;  // y-origin in meters
+
+  // Set map frame id
+  map_frame_ = cpp_grid_.header.frame_id;
 
   // Scale starting point
   scaledStart.x = static_cast<unsigned int>(clamp((realStart.pose.position.x - grid_origin_.x) / tile_size_, 0.0,
