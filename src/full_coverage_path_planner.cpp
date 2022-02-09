@@ -253,6 +253,7 @@ void FullCoveragePathPlanner::upsamplePlan(std::vector<geometry_msgs::PoseStampe
 
     // Add pose1 to new path
     pose1.header.seq = count++;
+    pose1.header.stamp = ros::Time::now();
     path.push_back(pose1);
 
     // If poses have same orientation, do not upsample
@@ -279,6 +280,7 @@ void FullCoveragePathPlanner::upsamplePlan(std::vector<geometry_msgs::PoseStampe
       pose.pose.position.y -= (dy / pose_count * j);
 
       pose.header.seq = count++;
+      pose.header.stamp = ros::Time::now();
 
       path.push_back(pose);
     }
@@ -286,6 +288,7 @@ void FullCoveragePathPlanner::upsamplePlan(std::vector<geometry_msgs::PoseStampe
 
   geometry_msgs::PoseStamped last_pose = path[path.size()-1];
   last_pose.header.seq = count++;
+  last_pose.header.stamp = ros::Time::now();
 
   path.push_back(path[path.size()-1]);
 }
