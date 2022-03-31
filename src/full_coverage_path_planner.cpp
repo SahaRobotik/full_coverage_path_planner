@@ -285,11 +285,5 @@ void FullCoveragePathPlanner::upsamplePlan(std::vector<geometry_msgs::PoseStampe
       path.push_back(pose);
     }
   }
-
-  geometry_msgs::PoseStamped last_pose = path[path.size()-1];
-  last_pose.header.seq = count++;
-  last_pose.header.stamp = ros::Time::now();
-
-  path.push_back(path[path.size()-1]);
 }
 }  // namespace full_coverage_path_planner
